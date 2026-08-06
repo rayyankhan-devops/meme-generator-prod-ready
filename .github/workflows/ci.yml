@@ -1,1 +1,28 @@
+name: memeGen-Pipeline
+
+on: workflow_dispatch
+
+jobs:
+  linting:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Cloning code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          
+      - name: Install & Lint Backend
+        run: |
+          cd backend
+          npm ci
+          npm run lint
+          
+      - name: Install & Lint Frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run lint
 
