@@ -1,10 +1,6 @@
 
 name: memeGen-Pipeline
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
 jobs:
   linting:
@@ -32,10 +28,3 @@ jobs:
           npm ci
           npm run lint
           npm run build
-  docker-build-scan:
-    name: Docker Build & Security Scan
-    needs: linting
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
