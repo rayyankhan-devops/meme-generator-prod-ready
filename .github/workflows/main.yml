@@ -20,3 +20,16 @@ jobs:
           cd ..
           cd frontend
           npm i
+          cd ..
+
+      - name: running-lint
+        run: |
+          cd backend
+          npm run lint
+          cd ..
+          cd frontend
+          npm run lint
+          cd ..
+          
+      
+    
