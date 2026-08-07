@@ -43,7 +43,7 @@ jobs:
 
       - uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           
       - uses: docker/build-push-action@v6
@@ -52,8 +52,8 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/memegen-frontend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/memegen-frontend:${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/memegen-frontend:latest
+            ${{ vars.DOCKERHUB_USERNAME }}/memegen-frontend:${{ github.sha }}
 
       - uses: docker/build-push-action@v6
         with:
@@ -61,5 +61,5 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/memegen-backend:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/memegen-backend:${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/memegen-backend:latest
+            ${{ vars.DOCKERHUB_USERNAME }}/memegen-backend:${{ github.sha }}
