@@ -89,7 +89,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Backend server listening on http://localhost:${PORT}`);
-  console.log(`📍 Random Meme API Endpoint: http://localhost:${PORT}/api/meme/random`);
-});
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Backend server listening on http://localhost:${PORT}`);
+    console.log(`📍 Random Meme API Endpoint: http://localhost:${PORT}/api/meme/random`);
+  });
+}
+
+export default app;
