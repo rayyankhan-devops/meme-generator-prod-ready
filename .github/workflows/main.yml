@@ -2,58 +2,64 @@ name: MemeApp-CICD
 on: workflow_dispatch
 
 jobs:
-  Build-Run-And-check-linting:
+  build-test-lint:
     runs-on: ubuntu-latest
     steps:
-      - name: cloning-code
-        uses: actions/checkout@v4.4.0
+      - uses: actions/checkout@v4
 
-      - name: setup-Node
-        uses: actions/setup-node@v6.5.0
+      - uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
 
-      - name: Installing-dep-at-backend-and-frontend
+      - name: Install deps
         run: |
-          cd backend
-          npm i
-          cd ..
-          cd frontend
-          npm i
-          cd ..
+          npm ci
+          cd ../frontend && npm ci
+        working-directory: backend
 
-      - name: running-lint
+      - name: Run lint
         run: |
-          cd backend
           npm run lint
-          cd ..
-          cd frontend
-          npm run lint
-          cd ..
+          cd ../frontend && npm run lint
+        working-directory: backend
 
-      - name: testing-BackAndFrontEnd
+      - name: Run tests
         run: |
-          cd backend
-          npm run test
-          cd ..
-          cd frontend
-          npm run test
-          cd ..
+          npm test
+          cd ../frontend && npm test
+        working-directory: backend
 
-  Building-images:
+  build-and-push:
     runs-on: ubuntu-latest
-    needs:
-      - Build-Run-And-check-linting
+    needs: build-test-lint
     steps:
-      - name: cloning-code
-        uses: actions/checkout@v4.4.0
+      - uses: actions/checkout@v4
 
-      - name: Login-to-Docker
-        uses: docker/login-action@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
           
-      
-    
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/memegen-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/memegen-frontend:${{ github.sha }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/memegen-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/memegen-backend:${{ github.sha }}
