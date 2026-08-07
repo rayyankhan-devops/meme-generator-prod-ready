@@ -1,0 +1,21 @@
+name: Linting check
+on: workflow_dispatch
+
+jobs:
+  Build-Run-And-check-linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: cloning-code
+        uses: actions/checkout@v4.4.0
+
+      - name: setup-Node
+        uses: actions/setup-node@v6.5.0
+        with:
+          node-version: "22"
+
+      - name: Installing-dep-at-backend-and-frontend
+        run: |
+          cd backend
+          npm i
+          cd frontend
+          npm i
