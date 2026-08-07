@@ -30,6 +30,15 @@ jobs:
           cd frontend
           npm run lint
           cd ..
+
+      - name: testing-BackAndFrontEnd
+        run: |
+          cd backend
+          npm run test
+          cd ..
+          cd frontend
+          npm run test
+          cd ..
           
       
     
