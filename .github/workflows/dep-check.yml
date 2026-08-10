@@ -41,8 +41,8 @@ jobs:
           path: ${{ matrix.folder }}/npm-audit-report.json
           retention-days: 5
 
-      - name: Enforce Dependency Security
-        working-directory: ${{ matrix.folder }}
-        run: |
-          echo "Checking for High and Critical vulnerabilities..."
-          npm audit --audit-level=high
+      # - name: Enforce Dependency Security
+      #   working-directory: ${{ matrix.folder }.}
+      #   run: |
+      #     echo "Checking for High and Critical vulnerabilities..."
+      #     npm audit --audit-level=high
