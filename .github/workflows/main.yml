@@ -18,3 +18,7 @@ jobs:
         needs: [lint,secret-scanning]
         uses: ./.github/workflows/dep-check.yml
 
+    code-scan:
+        needs: [lint,secret-scanning,dep-scanning]
+        uses: ./.github/workflows/code-scan.yml
+
