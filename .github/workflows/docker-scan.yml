@@ -12,11 +12,11 @@ jobs:
         include:
           - dockerfile-path: ./frontend/Dockerfile
             context-path: ./frontend
-            image-name: devboard-frontend
+            image-name: meme-generator-frontend
 
           - dockerfile-path: ./backend/Dockerfile
             context-path: ./backend
-            image-name: devboard-backend
+            image-name: meme-generator-backend
 
     steps:
       - name: Checkout Code
@@ -70,11 +70,12 @@ jobs:
           path: trivy-${{ matrix.image-name }}.json
           retention-days: 5
 
-      - name: Run Scout Quickview
+      - name: Run Docker Scout Quickview
         if: success()
-        run: |
-          docker scout quickview \
-            ${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.image-name }}:${{ github.sha }}
+        uses: docker/scout-action@v1
+        with:
+          command: quickview
+          image: ${{ vars.DOCKERHUB_USERNAME }}/${{ matrix.image-name }}:${{ github.sha }}
 
       - name: Push Docker Image
         if: success()
