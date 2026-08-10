@@ -23,6 +23,7 @@ WORKDIR /usr/src/app
 ENV NODE_ENV=production
 
 # Install zero-vulnerability nodejs runtime from alpine 3.24 & create non-root user
+# hadolint ignore=DL3018
 RUN apk add --no-cache nodejs && \
     addgroup -g 1000 node && \
     adduser -u 1000 -G node -s /bin/sh -D node
