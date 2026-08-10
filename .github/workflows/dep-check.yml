@@ -1,0 +1,31 @@
+name: depencies-check
+
+on:
+    workflow_call:
+
+jobs:
+    dep-check:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                folder: ["frontend","backend"]
+        steps:
+            - name: code cloning
+              uses: actions/checkout@v4
+        
+            - name: setUp Node
+              uses: actions/setup-node@v7
+              with:
+                node-version: "22"
+                cache: npm
+                cache-dependency-path: ${{ matrix.folder }}/package-lock.json
+    
+            - name: Installing Dependencies
+              working-directory: ${{ matrix.folder }}
+              run: |
+                npm ci
+
+            - name: scanning Dependencies
+              working-directory: ${{ matrix.folder }}
+              run: |
+                npm audit
