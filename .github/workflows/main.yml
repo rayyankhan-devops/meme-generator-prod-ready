@@ -27,4 +27,5 @@ jobs:
     docker-scan:
         needs: [lint, secret-scanning, dep-scanning, code-scan, hadolint-scan]
         uses: ./.github/workflows/docker-scan.yml
+        secrets: inherit
 
