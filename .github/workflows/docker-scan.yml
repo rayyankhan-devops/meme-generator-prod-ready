@@ -1,0 +1,87 @@
+name: Docker-Scan
+
+on:
+  workflow_call:
+
+jobs:
+  build-scan-push:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - dockerfile-path: ./frontend/Dockerfile
+            context-path: ./frontend
+            image-name: devboard-frontend
+
+          - dockerfile-path: ./backend/Dockerfile
+            context-path: ./backend
+            image-name: devboard-backend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context-path }}
+          file: ${{ matrix.dockerfile-path }}
+          load: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image-name }}:${{ github.sha }}
+
+      - name: Install Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image-name }}:${{ github.sha }}
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+      - name: Generate Trivy JSON Report
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image-name }}:${{ github.sha }}
+          format: json
+          output: trivy-${{ matrix.image-name }}.json
+          exit-code: "0"
+          ignore-unfixed: true
+          vuln-type: os,library
+          severity: CRITICAL,HIGH
+
+      - name: Upload Trivy Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report-${{ matrix.image-name }}
+          path: trivy-${{ matrix.image-name }}.json
+          retention-days: 5
+
+      - name: Run Scout Quickview
+        if: success()
+        run: |
+          docker scout quickview \
+            ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image-name }}:${{ github.sha }}
+
+      - name: Push Docker Image
+        if: success()
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context-path }}
+          file: ${{ matrix.dockerfile-path }}
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/${{ matrix.image-name }}:${{ github.sha }}
