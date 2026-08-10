@@ -1,38 +1,48 @@
 name: dependencies-check
 
 on:
-    workflow_call:
+  workflow_call:
 
 jobs:
-    dep-check:
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                folder: ["frontend","backend"]
-        steps:
-            - name: code cloning
-              uses: actions/checkout@v4
-        
-            - name: setUp Node
-              uses: actions/setup-node@v7
-              with:
-                node-version: "22"
-                cache: npm
-                cache-dependency-path: ${{ matrix.folder }}/package-lock.json
-    
-            - name: Installing Dependencies
-              working-directory: ${{ matrix.folder }}
-              run: |
-                npm ci
+  dep-check:
+    runs-on: ubuntu-latest
 
-            - name: scanning Dependencies
-              working-directory: ${{ matrix.folder }}
-              run: |
-                npm audit --json > npm-audit-report.json || true
+    strategy:
+      matrix:
+        folder: ["frontend", "backend"]
 
-            - name: Uploading the report
-              uses: actions/upload-artifact@v4
-              with:
-                name: npm-security-report-${{ matrix.folder }}
-                path: ${{ matrix.folder }}/npm-audit-report.json
-                retention-days: 5
+    steps:
+      - name: Code Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ${{ matrix.folder }}/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ${{ matrix.folder }}
+        run: npm ci
+
+      - name: Generate Dependency Report
+        working-directory: ${{ matrix.folder }}
+        run: |
+          npm audit --json > npm-audit-report.json || true
+
+      - name: Upload Dependency Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-security-report-${{ matrix.folder }}
+          path: ${{ matrix.folder }}/npm-audit-report.json
+          retention-days: 5
+
+      - name: Enforce Dependency Security
+        working-directory: ${{ matrix.folder }}
+        run: |
+          echo "Checking for High and Critical vulnerabilities..."
+          npm audit --audit-level=high
