@@ -9,9 +9,8 @@ jobs:
 
     permissions:
       security-events: write
-      packages: read
-      actions: read
       contents: read
+      actions: read
 
     steps:
       - name: Checkout Repository
@@ -20,7 +19,9 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: javascript
+          languages: 'javascript-typescript'
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript-typescript'
