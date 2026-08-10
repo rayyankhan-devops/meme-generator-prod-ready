@@ -11,14 +11,12 @@ jobs:
         uses: ./.github/workflows/lint.yml
     
     secret-scanning:
-        needs: [lint]
         uses: ./.github/workflows/secret-scan.yml
     
     dep-scanning:
-        needs: [lint,secret-scanning]
+        needs: [lint]
         uses: ./.github/workflows/dep-check.yml
 
     code-scan:
-        needs: [lint,secret-scanning,dep-scanning]
         uses: ./.github/workflows/code-scan.yml
 
