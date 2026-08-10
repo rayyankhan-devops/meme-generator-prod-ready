@@ -1,4 +1,4 @@
-name: depencies-check
+name: dependencies-check
 
 on:
     workflow_call:
@@ -28,4 +28,11 @@ jobs:
             - name: scanning Dependencies
               working-directory: ${{ matrix.folder }}
               run: |
-                npm audit
+                npm audit --json > npm-audit-report.json || true
+
+            - name: Uploading the report
+              uses: actions/upload-artifact@v4
+              with:
+                name: npm-security-report-${{ matrix.folder }}
+                path: ${{ matrix.folder }}/npm-audit-report.json
+                retention-days: 5
