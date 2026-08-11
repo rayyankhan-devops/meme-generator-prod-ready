@@ -19,5 +19,8 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       
-      - name: Deploy the containers with Docker Compose
-        run: docker compose up -d
+      - name: Build the containers with Docker Compose
+        run: docker compose build --no-cache backend
+      
+      - name: Build the containers with Docker Compose
+        run: docker compose up -d --force-recreate backend
