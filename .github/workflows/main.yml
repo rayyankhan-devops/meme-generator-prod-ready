@@ -1,36 +1,56 @@
 name: Meme-Generator-CI
 
 on:
-    push:
-        branches: [ main ]
-    pull_request:
-        branches: [ main ]
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-    lint:
-        uses: ./.github/workflows/lint.yml
-    
-    secret-scanning:
-        uses: ./.github/workflows/secret-scan.yml
-    
-    dep-scanning:
-        needs: [lint]
-        uses: ./.github/workflows/dep-check.yml
+  # ==========================================
+  # STAGE 1: Fast Code Quality & Testing (Parallel)
+  # ==========================================
+  lint:
+    uses: ./.github/workflows/lint.yml
 
-    code-scan:
-        uses: ./.github/workflows/code-scan.yml
+  secret-scanning:
+    uses: ./.github/workflows/secret-scan.yml
 
-    hadolint-scan:
-        needs: [lint, secret-scanning, dep-scanning, code-scan]
-        uses: ./.github/workflows/docker-hadolint.yml
-    
-    docker-scan:
-        needs: [lint, secret-scanning, dep-scanning, code-scan, hadolint-scan]
-        uses: ./.github/workflows/docker-scan.yml
-        secrets: inherit
-    
-    sonar-scan:
-        needs: [lint, secret-scanning, dep-scanning, code-scan, hadolint-scan, docker-scan]
-        uses: ./.github/workflows/sonarcube.yml
-        secrets: inherit
+  code-test:
+    uses: ./.github/workflows/code-test.yml
 
+  # ==========================================
+  # STAGE 2: Security & Static Code Analysis
+  # ==========================================
+  dep-scanning:
+    needs: [lint]
+    uses: ./.github/workflows/dep-check.yml
+
+  code-scan:
+    needs: [lint, code-test]
+    uses: ./.github/workflows/code-scan.yml
+
+  sonar-scan:
+    needs: [lint, code-test]
+    uses: ./.github/workflows/sonarcube.yml
+    secrets: inherit
+
+  # ==========================================
+  # STAGE 3: Container Security & Image Scanning
+  # ==========================================
+  hadolint-scan:
+    needs: [lint, code-test]
+    uses: ./.github/workflows/docker-hadolint.yml
+
+  docker-scan:
+    needs: [hadolint-scan, secret-scanning, code-test]
+    uses: ./.github/workflows/docker-scan.yml
+    secrets: inherit
+
+  # ==========================================
+  # STAGE 4: Production Image Push / Release
+  # ==========================================
+  docker-push:
+    needs: [docker-scan, sonar-scan, dep-scanning]
+    uses: ./.github/workflows/docker-push.yml
+    secrets: inherit

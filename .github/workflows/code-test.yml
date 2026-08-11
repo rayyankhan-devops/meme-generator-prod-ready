@@ -1,0 +1,29 @@
+name: code-test
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        folder: ["frontend", "backend"]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: ${{ matrix.folder }}/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ${{ matrix.folder }}
+        run: npm ci
+
+      - name: Run Unit & Integration Tests
+        working-directory: ${{ matrix.folder }}
+        run: npm test
