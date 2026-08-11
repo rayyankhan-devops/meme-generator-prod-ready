@@ -6,50 +6,24 @@ on:
 
 jobs:
   deploy:
-    name: Deploy Application via Docker Compose
-    runs-on: ubuntu-latest
+    name: Deploy to Production
+    runs-on: self-hosted
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy to Remote EC2 Server via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        if: ${{ secrets.SERVER_HOST != '' || secrets.HOST_IP != '' }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          host: ${{ secrets.SERVER_HOST != '' && secrets.SERVER_HOST || secrets.HOST_IP }}
-          username: ${{ secrets.SERVER_USER || 'ubuntu' }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
-          script: |
-            set -e
-            echo "🚀 Starting Automated Deployment on EC2 Instance..."
-            
-            TARGET_DIR="${{ secrets.TARGET_DIR || '~/meme-generator' }}"
-            mkdir -p $TARGET_DIR
-            cd $TARGET_DIR
-            
-            # Login to Docker Hub
-            if [ -n "${{ secrets.DOCKERHUB_TOKEN }}" ]; then
-              echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
-            fi
-            
-            # Pull latest production images or rebuild without cache
-            echo "📦 Deploying containers with Docker Compose..."
-            docker compose pull || docker compose build --no-cache
-            docker compose up -d --force-recreate --remove-orphans
-            
-            echo "✅ Verifying running services..."
-            docker compose ps
-            
-            # Clean up unused Docker images
-            docker image prune -f
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Self-Hosted Runner Local Deployment
-        if: ${{ secrets.SERVER_HOST == '' && secrets.HOST_IP == '' }}
-        run: |
-          echo "🚀 Performing local Docker Compose deployment..."
-          docker compose pull || docker compose build --no-cache
-          docker compose up -d --force-recreate --remove-orphans
-          echo "✅ Verifying service status..."
-          docker compose ps
+      - name: Build containers
+        run: docker compose build
+
+      - name: Deploy containers
+        run: docker compose up -d --force-recreate
+
+      - name: Show running containers
+        run: docker compose ps
