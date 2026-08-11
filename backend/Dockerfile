@@ -10,8 +10,8 @@ RUN npm ci
 
 COPY index.js ./
 
-# Bundle index.js and all npm dependencies into a single 1MB file using esbuild
-RUN npx esbuild index.js --bundle --platform=node --target=node22 --format=esm --outfile=dist/server.js
+# Bundle index.js and all npm dependencies into a single file using esbuild (CommonJS target for Node built-in compatibility)
+RUN npx esbuild index.js --bundle --platform=node --target=node22 --format=cjs --outfile=dist/server.js
 
 # ==========================================
 # STAGE 2: Production Minimal Runner (~38 MB)
