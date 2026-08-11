@@ -50,6 +50,7 @@ jobs:
   compose-test:
     needs: [hadolint-scan, code-test]
     uses: ./.github/workflows/compose-test.yml
+    secrets: inherit
 
   # ==========================================
   # STAGE 4: Production Image Push / Release

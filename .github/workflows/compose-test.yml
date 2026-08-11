@@ -5,7 +5,7 @@ on:
 
 jobs:
   compose-test:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
@@ -26,9 +26,14 @@ jobs:
       - name: Verify Application Endpoints
         run: |
           echo "Waiting for services to become ready..."
-          sleep 10
-          curl -f http://${{ secrets.HOST_IP }}:8080 || exit 1
-          curl -f http://${{ secrets.HOST_IP }}:5000/api/health || exit 1
+          sleep 12
+          TARGET_HOST="${{ secrets.HOST_IP }}"
+          if [ -z "$TARGET_HOST" ]; then
+            TARGET_HOST="localhost"
+          fi
+          echo "Testing endpoint at http://${TARGET_HOST}:8080 ..."
+          curl -f "http://${TARGET_HOST}:8080" || curl -f "http://localhost:8080" || exit 1
+          curl -f "http://${TARGET_HOST}:5000/api/health" || curl -f "http://localhost:5000/api/health" || exit 1
 
       - name: Stop Compose Services
         if: always()
