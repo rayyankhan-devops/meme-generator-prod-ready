@@ -1,0 +1,35 @@
+name: docker-compose-test
+
+on:
+  workflow_call:
+
+jobs:
+  compose-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose Configuration
+        run: docker compose config
+
+      - name: Build Services via Docker Compose
+        run: docker compose build
+
+      - name: Start Services via Docker Compose
+        run: docker compose up -d
+
+      - name: Check Running Containers
+        run: docker compose ps
+
+      - name: Verify Application Endpoints
+        run: |
+          echo "Waiting for services to become ready..."
+          sleep 10
+          curl -f http://localhost:8080 || exit 1
+          curl -f http://localhost:5000/api/health || exit 1
+
+      - name: Stop Compose Services
+        if: always()
+        run: docker compose down -v

@@ -36,7 +36,7 @@ jobs:
     secrets: inherit
 
   # ==========================================
-  # STAGE 3: Container Security & Image Scanning
+  # STAGE 3: Container Security & Integration Testing
   # ==========================================
   hadolint-scan:
     needs: [lint, code-test]
@@ -47,10 +47,22 @@ jobs:
     uses: ./.github/workflows/docker-scan.yml
     secrets: inherit
 
+  compose-test:
+    needs: [hadolint-scan, code-test]
+    uses: ./.github/workflows/compose-test.yml
+
   # ==========================================
   # STAGE 4: Production Image Push / Release
   # ==========================================
   docker-push:
-    needs: [docker-scan, sonar-scan, dep-scanning]
+    needs: [docker-scan, sonar-scan, dep-scanning, compose-test]
     uses: ./.github/workflows/docker-push.yml
+    secrets: inherit
+
+  # ==========================================
+  # STAGE 5: Production Deployment (CD)
+  # ==========================================
+  deploy:
+    needs: [docker-push]
+    uses: ./.github/workflows/deploy.yml
     secrets: inherit

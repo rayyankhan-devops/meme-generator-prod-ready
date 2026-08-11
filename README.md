@@ -47,7 +47,26 @@ meme-generator/
 
 ## 🚀 Step-by-Step Setup Guide
 
-### Method 1: Running with Docker (Recommended)
+### Method 1: Running with Docker Compose (Recommended - Single Command)
+
+Start all services (MySQL, Backend, Frontend) with automatic health checks and database auto-seeding:
+
+```bash
+# Start all containers in background
+docker compose up -d
+
+# View status of running services
+docker compose ps
+
+# Stop all services and clean up volumes
+docker compose down -v
+```
+
+Open **[`http://localhost:8080`](http://localhost:8080)** in your browser!
+
+---
+
+### Method 2: Running with Individual Docker CLI Commands
 
 #### Step 1: Create the Docker Network
 ```bash
@@ -55,8 +74,6 @@ docker network create memegen
 ```
 
 #### Step 2: Run the MySQL Database Container
-Mount `init/mysql/init.sql` into `/docker-entrypoint-initdb.d/` so MySQL automatically seeds the database on startup:
-
 ```bash
 docker run -d \
   --name mysql \
@@ -95,9 +112,6 @@ docker run -d \
   -p 8080:8080 \
   memegen-frontend:v2.0.0
 ```
-
-#### Step 5: Access the Application
-Open **[`http://localhost:8080`](http://localhost:8080)** in your browser!
 
 ---
 
