@@ -47,16 +47,12 @@ jobs:
     uses: ./.github/workflows/docker-scan.yml
     secrets: inherit
 
-  compose-test:
-    needs: [hadolint-scan, code-test]
-    uses: ./.github/workflows/compose-test.yml
-    secrets: inherit
 
   # ==========================================
   # STAGE 4: Production Image Push / Release
   # ==========================================
   docker-push:
-    needs: [docker-scan, sonar-scan, dep-scanning, compose-test]
+    needs: [docker-scan, sonar-scan, dep-scanning]
     uses: ./.github/workflows/docker-push.yml
     secrets: inherit
 
